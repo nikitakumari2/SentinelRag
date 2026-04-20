@@ -96,6 +96,8 @@ SentinelRag/
 ├── update_sdn.py
 └── vector_db/
 ```
+## Pipeline
+<img width="1322" height="1438" alt="image" src="https://github.com/user-attachments/assets/4dc6ea9c-02de-4b1d-b51d-441e03314ecf" />
 
 ---
 
