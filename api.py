@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from engine import SentinelRAGEngine
+from privacy import anonymize_text
 import datetime
 import json
 
@@ -14,9 +15,10 @@ class QueryRequest(BaseModel):
 
 
 def log_decision(query, result):
+    redacted_query = anonymize_text(query)
     log_entry = {
         "timestamp": datetime.datetime.utcnow().isoformat(),
-        "query": query,
+        "query": redacted_query,
         "result": result
     }
 

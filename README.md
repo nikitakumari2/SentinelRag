@@ -13,6 +13,7 @@ SentinelRAG screens business entities, people, aliases, and identifiers against 
 - [Run the System](#run-the-system)
 - [Keep SDN Data Updated](#keep-sdn-data-updated)
 - [Evaluation and Benchmarking](#evaluation-and-benchmarking)
+- [PII Handling Mode (Presidio)](#pii-handling-mode-presidio)
 - [Configuration Notes](#configuration-notes)
 - [Roadmap](#roadmap)
 - [Disclaimer](#disclaimer)
@@ -192,6 +193,25 @@ python evaluate.py
 python benchmark.py
 python generate_auto_tests.py
 ```
+
+## PII Handling Mode (Presidio)
+
+SentinelRAG includes optional PII redaction utilities via Microsoft Presidio.
+
+Current integration points:
+
+- API audit logging redacts the stored query before writing `audit_log.jsonl`.
+- Streamlit bulk section includes an optional checkbox to redact query text in displayed/exported CSV output.
+
+By default, redaction is disabled. Enable with environment variables:
+
+```bash
+export ENABLE_PII_REDACTION=true
+export PII_ENTITIES=PHONE_NUMBER,EMAIL_ADDRESS,PERSON
+```
+
+If `ENABLE_PII_REDACTION` is false/unset, text is passed through unchanged.
+The default lightweight mode avoids downloading large NLP models; for this reason, default entities focus on regex-based types such as phone and email.
 
 ## Configuration Notes
 

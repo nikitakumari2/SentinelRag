@@ -1,5 +1,6 @@
 import streamlit as st
 from engine import SentinelRAGEngine
+from privacy import anonymize_text
 import pandas as pd
 import plotly.graph_objects as go
 import io
@@ -90,6 +91,12 @@ if st.button("Screen Entity"):
 # ----------------------------
 st.header("Bulk Screening (CSV Upload)")
 
+redact_bulk_output = st.checkbox(
+    "Redact PII in bulk results/download",
+    value=False,
+    help="Uses Presidio when ENABLE_PII_REDACTION is enabled."
+)
+
 uploaded_file = st.file_uploader(
     "Upload CSV file with a column named 'query'",
     type=["csv"]
@@ -120,6 +127,9 @@ if uploaded_file is not None:
                     })
 
             results_df = pd.DataFrame(results)
+
+            if redact_bulk_output and "query" in results_df.columns:
+                results_df["query"] = results_df["query"].astype(str).apply(anonymize_text)
 
             st.subheader("Bulk Screening Results")
             st.dataframe(results_df, use_container_width=True)
