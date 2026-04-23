@@ -8,3 +8,6 @@ __pycache__/
 audit_log.jsonl
 data/backups/
 logs/
+vector_db/
+bm25_corpus.json
+knowledge_graph.pkl

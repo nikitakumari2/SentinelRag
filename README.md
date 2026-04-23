@@ -11,12 +11,15 @@ SentinelRAG screens business entities, people, aliases, and identifiers against 
 - [Overview](#overview)
 - [How It Works](#how-it-works)
 - [Project Structure](#project-structure)
+- [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)
 - [Run the System](#run-the-system)
 - [Keep SDN Data Updated](#keep-sdn-data-updated)
 - [Evaluation and Benchmarking](#evaluation-and-benchmarking)
 - [PII Handling Mode (Presidio)](#pii-handling-mode-presidio)
+- [API Response Shape](#api-response-shape)
 - [Configuration](#configuration)
+- [Troubleshooting](#troubleshooting)
 - [Roadmap](#roadmap)
 - [Disclaimer](#disclaimer)
 
@@ -86,6 +89,7 @@ SentinelRag/
 ├── evaluate.py
 ├── evaluation_data.json
 ├── evaluation_data_auto.json
+├── privacy.py
 ├── generate_auto_tests.py
 ├── generator.py
 ├── ingesting.py
@@ -101,6 +105,14 @@ SentinelRag/
 
 ---
 
+## Prerequisites
+
+- Python 3.10+ (3.11 recommended)
+- `pip` and virtual environment support
+- Internet access for first-time model downloads (optional but recommended)
+
+If model downloads are blocked, SentinelRAG still runs in deterministic fallback mode using graph + BM25 logic.
+
 ## Quick Start
 
 ### 1) Clone and install
@@ -111,6 +123,12 @@ cd SentinelRag
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+```
+
+Optional (for cleaner dependency isolation):
+
+```bash
+pip install --upgrade pip
 ```
 
 ### 2) Prepare SDN data
@@ -322,7 +340,28 @@ export PII_ENTITIES=PHONE_NUMBER,EMAIL_ADDRESS,PERSON
 
 If `ENABLE_PII_REDACTION` is false/unset, text is passed through unchanged. The default lightweight mode avoids downloading large NLP models; for this reason, default entities focus on regex-based types such as phone and email.
 
----
+## API Response Shape
+
+Typical `POST /screen` response:
+
+```json
+{
+  "query": "Banco Nacional de Cuba",
+  "decision": "MATCH",
+  "entity_number": "12345",
+  "confidence": 0.98,
+  "reason": "High fuzzy similarity with strong retrieval agreement",
+  "latency": {
+    "total_ms": 52.1
+  }
+}
+```
+
+Notes:
+
+- `decision` is always deterministic (`MATCH` or `NO_MATCH`).
+- `entity_number` may be `null` when no high-confidence match is found.
+- `latency` contains per-step timing details when available.
 
 ## Configuration
 
@@ -335,6 +374,14 @@ Key constants you can tune — all currently defined in `engine.py` and `retriev
 | `k` in `hybrid_retrieve()` | `5` | `engine.py` line 65 | Candidates fetched from each retrieval method. Higher = better recall, slower retrieval. |
 
 ---
+
+## Troubleshooting
+
+- **`data/sdn.csv` missing**: run `python update_sdn.py` or download manually, then run `python ingesting.py`.
+- **`vector_db`/index artifacts missing**: run `python ingesting.py` to regenerate all retrieval assets.
+- **Model download failures**: verify network/proxy settings; fallback mode still allows deterministic screening.
+- **Slow startup on first run**: expected while embedding/rerank models cache locally.
+- **Streamlit watcher warnings**: run with `--server.fileWatcherType none`.
 
 ## Roadmap
 
